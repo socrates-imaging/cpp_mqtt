@@ -42,11 +42,11 @@ class callback : public virtual mqtt::callback,
 	void reconnect() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 		try {
-			cli_.connect(connOpts_, nullptr, *this);
+			cli_.connect(connOpts_, nullptr, *this)->wait();
 		}
 		catch (const mqtt::exception& exc) {
 			std::cerr << "Error: " << exc.what() << std::endl;
-			abort();//TODO remove exits for propper fault exceptions
+			reconnect();//TODO remove exits for propper fault exceptions
 		}
 	}
 	// Re-connection failure
