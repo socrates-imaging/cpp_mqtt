@@ -30,7 +30,7 @@ class MQTT{
         void error(int error, std::string errormsg);
         void subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func);
         bool connect();
-        bool disconnect(int timeout_ms);
+        bool disconnect(int timeout_ms = 200);
 
         MQTT(MQTT const&) = delete;
         void operator=(MQTT const&) = delete;

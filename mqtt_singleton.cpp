@@ -85,7 +85,7 @@ bool MQTT::connect(){
     return connected;
 }
 
-bool MQTT::disconnect(int timeout_ms = 200){
+bool MQTT::disconnect(int timeout_ms){
     if(!connected)
         return !connected;
     try {
