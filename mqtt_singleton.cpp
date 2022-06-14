@@ -45,22 +45,7 @@ MQTT::MQTT(std::string network)
 
     cli.set_callback(cb);
 
-	try {
-        #ifdef SPDLOG_H
-		logger->info("[MQTT] Connecting to the MQTT server...");
-        #else
-        std::cout << "[MQTT] Connecting to the MQTT server..." << std::endl;
-        #endif
-
-		cli.connect(connOpts, nullptr, cb)->wait();
-	}
-	catch (const mqtt::exception& exc) {
-        #ifdef SPDLOG_H
-		logger->info("[MQTT] Unable to connect to MQTT server, reason: {}", exc.what());
-        #else
-        std::cout << "[MQTT] Unable to connect to MQTT server, reason: " << exc.what() << std::endl;
-        #endif
-	}
+	this->connect();
 }
 
 MQTT::MQTT(std::string network, std::string user, std::string pass) 
@@ -75,14 +60,21 @@ MQTT::MQTT(std::string network, std::string user, std::string pass)
 
     cli.set_callback(cb);
 
-	try {
+	this->connect();
+}
+
+bool MQTT::connect(){
+    if(connected)
+        return connected;
+    try {
         #ifdef SPDLOG_H
 		logger->info("[MQTT] Connecting to the MQTT server...");
         #else
         std::cout << "[MQTT] Connecting to the MQTT server..." << std::endl;
         #endif
 		cli.connect(connOpts, nullptr, cb)->wait();
-	}
+        connected = true;
+    }
 	catch (const mqtt::exception& exc) {
         #ifdef SPDLOG_H
 		logger->info("[MQTT] Unable to connect to MQTT server, reason: {}", exc.what());
@@ -90,6 +82,28 @@ MQTT::MQTT(std::string network, std::string user, std::string pass)
         std::cout << "[MQTT] Unable to connect to MQTT server, reason: " << exc.what() << std::endl;
         #endif
 	}
+    return connected;
+}
+
+bool MQTT::disconnect(int timeout_ms = 200){
+    if(!connected)
+        return !connected;
+    try {
+        #ifdef SPDLOG_H
+		logger->info("[MQTT] Disconnecting from the MQTT server...");
+        #else
+        std::cout << "[MQTT] Disconnecting from the MQTT server..." << std::endl;
+        #endif
+        cli.disconnect();
+        connected = false;
+    } catch (const mqtt::exception& exc) {
+        #ifdef SPDLOG_H
+		logger->info("[MQTT] Unable to disconnect from MQTT server, reason: {}", exc.what());
+        #else
+        std::cout << "[MQTT] Unable to disconnect from MQTT server, reason: " << exc.what() << std::endl;
+        #endif
+    }
+    return !connected;
 }
   
 void MQTT::subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func){
