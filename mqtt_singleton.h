@@ -21,7 +21,7 @@ class MQTT{
         callback cb;
         static MQTT *client;
         static std::mutex mutex;
-
+        bool connected = false;
     public:
         static MQTT* getInstance(std::string network = "", std::string user = "", std::string pass = "");
 
@@ -29,7 +29,9 @@ class MQTT{
         void publish(std::string topic, int qos, std::string msg, std::function<void(std::string, std::string)> func);
         void error(int error, std::string errormsg);
         void subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func);
-        
+        bool connect();
+        bool disconnect(int timeout_ms = 200);
+
         MQTT(MQTT const&) = delete;
         void operator=(MQTT const&) = delete;
 };
