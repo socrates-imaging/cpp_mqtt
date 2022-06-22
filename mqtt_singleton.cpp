@@ -116,6 +116,10 @@ void MQTT::publish(std::string topic, int qos, std::string msg){
     cb.publish(message);
 }
 
+void MQTT::unsubscribe(std::string topic){
+    cb.remove_callback(topic);
+}
+
 void MQTT::publish(std::string topic, int qos, std::string msg, std::function<void(std::string, std::string)> func){
     mqtt::message_ptr message = mqtt::make_message(topic, msg);
     message->set_qos(qos);

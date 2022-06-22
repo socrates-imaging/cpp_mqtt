@@ -29,6 +29,7 @@ class MQTT{
         void publish(std::string topic, int qos, std::string msg, std::function<void(std::string, std::string)> func);
         void error(int error, std::string errormsg);
         void subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func);
+        void unsubscribe(std::string topic);
         bool connect();
         bool disconnect(int timeout_ms = 200);
 
