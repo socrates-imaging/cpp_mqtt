@@ -151,6 +151,11 @@ class callback : public virtual mqtt::callback,
     public:
 	    callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
 				: nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
+
+	void remove_callback(std::string topic){
+		cli_.unsubscribe(topic);
+		dispatch.erase(topic);
+	}
 	
 	void add_callback(std::string topic, int qos, std::function<void(std::string, std::string)> func){
        dispatch.emplace(topic, func);
