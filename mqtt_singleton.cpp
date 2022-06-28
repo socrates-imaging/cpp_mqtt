@@ -64,6 +64,9 @@ MQTT::MQTT(std::string network, std::string user, std::string pass)
 }
 
 bool MQTT::connect(){
+    #ifdef SPDLOG_H
+    auto logger = spdlog::get("MQTT");
+    #endif
     if(connected)
         return connected;
     try {
@@ -86,6 +89,9 @@ bool MQTT::connect(){
 }
 
 bool MQTT::disconnect(int timeout_ms){
+    #ifdef SPDLOG_H
+    auto logger = spdlog::get("MQTT");
+    #endif
     if(!connected)
         return !connected;
     try {
