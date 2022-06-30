@@ -1,4 +1,5 @@
 // uses the C/C++ mqtt-paho library. Needs libmosquitto-dev to compile, follow https://github.com/eclipse/paho.mqtt.cpp to install.
+#pragma once
 
 #include <sstream>
 #include <mqtt/async_client.h>
