@@ -1,9 +1,10 @@
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required (VERSION 3.7)
 
 project (soc_mqtt VERSION 1.0 DESCRIPTION "Socrates MQTT lib")
 
 include(GNUInstallDirs)
 
+# target_include_directories(soc_mqtt PUBLIC .)
 add_library(soc_mqtt SHARED
     mqtt_singleton.cpp
 )
@@ -11,12 +12,11 @@ add_library(soc_mqtt SHARED
 set_target_properties(soc_mqtt PROPERTIES 
 VERSION ${PROJECT_VERSION}
 SOVERSION 1
-PUBLIC_HEADER mqtt_singleton.h
+PUBLIC_HEADER "mqtt_singleton.h;callback.hpp"
 )
 
 configure_file(soc_mqtt.pc.in soc_mqtt.pc @ONLY)
 
-target_include_directories(soc_mqtt INTERFACE .)
 
 install(TARGETS soc_mqtt
 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
