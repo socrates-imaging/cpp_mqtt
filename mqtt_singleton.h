@@ -26,7 +26,7 @@ class MQTT{
     public:
         static MQTT* getInstance(std::string network = "", std::string user = "", std::string pass = "");
 
-        void publish(std::string topic, int qos, std::string msg);
+        void publish(std::string topic, int qos, std::string msg, bool retain = false);
         void publish(std::string topic, int qos, std::string msg, std::function<void(std::string, std::string)> func);
         void error(int error, std::string errormsg);
         void subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func);

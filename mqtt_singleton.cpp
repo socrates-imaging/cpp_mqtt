@@ -116,14 +116,11 @@ void MQTT::subscribe(std::string topic, int qos, std::function<void(std::string,
     cb.add_callback(topic, qos, func);
 }
 
-void MQTT::publish(std::string topic, int qos, std::string msg){
+void MQTT::publish(std::string topic, int qos, std::string msg, bool retain){
     mqtt::message_ptr message = mqtt::make_message(topic, msg);
     message->set_qos(qos);
+    message->set_retained(retain);
     cb.publish(message);
-}
-
-void MQTT::unsubscribe(std::string topic){
-    cb.remove_callback(topic);
 }
 
 void MQTT::publish(std::string topic, int qos, std::string msg, std::function<void(std::string, std::string)> func){
@@ -131,6 +128,10 @@ void MQTT::publish(std::string topic, int qos, std::string msg, std::function<vo
     message->set_qos(qos);
     cb.publish(message);
     cb.add_callback("topic", func);
+}
+
+void MQTT::unsubscribe(std::string topic){
+    cb.remove_callback(topic);
 }
 
 void MQTT::error(int error, std::string errormsg){
