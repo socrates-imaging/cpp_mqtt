@@ -28,6 +28,7 @@ auto MQTT_logger = std::make_shared<spdlog::logger>("MQTT", SINKS);
 Currently not using secure sockets. Planned in the future, poke Thomas.<br>
 <i>ps. Thomas if you read this, update the readme when you've implemented it.</i>
 
+
 Build Paho libraries with:
 ```bash
 $ sudo apt-get install build-essential gcc make cmake cmake-gui cmake-curses-gui libssl-dev
