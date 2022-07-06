@@ -31,7 +31,7 @@ MQTT *MQTT::getInstance(std::string network, std::string user, std::string pass)
 }
 
 MQTT::MQTT(std::string network)
-    : cli(network, "MQTT_SINGLETON_EXPRESS"),
+    : cli(network, "MQTT_RABBIT_SERVER"),
       connOpts(mqtt::connect_options_builder().clean_session().mqtt_version(0).finalize()),
       cb(cli, connOpts) {
 
@@ -41,7 +41,7 @@ MQTT::MQTT(std::string network)
 }
 
 MQTT::MQTT(std::string network, std::string user, std::string pass) 
-    : cli(network, "MQTT_SINGLETON_EXPRESS"),
+    : cli(network, "MQTT_RABBIT_SERVER"),
       connOpts(mqtt::connect_options_builder()
         .user_name(user).password(pass).clean_session().mqtt_version(0).finalize()),
       cb(cli, connOpts) {
