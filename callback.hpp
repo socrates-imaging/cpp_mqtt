@@ -10,8 +10,6 @@
 #include <iostream>
 #endif
 
-const int	N_RETRY_ATTEMPTS = 5;
-
 class action_listener : public virtual mqtt::iaction_listener{
     std::string name_;
 
@@ -53,8 +51,16 @@ class action_listener : public virtual mqtt::iaction_listener{
 	    action_listener(const std::string& name) : name_(name) {}
 };
 
+class MQTT;
+
+namespace MQTT_CONSTS {
+	// max amount of retries
+	constexpr const int	N_RETRY_ATTEMPTS = 5;
+}
+
 class callback : public virtual mqtt::callback,
 					public virtual mqtt::iaction_listener{
+friend MQTT;
     // Counter for the number of connection retries
 	int nretry_;
 	// Reference to the client for reconnect
@@ -74,7 +80,6 @@ class callback : public virtual mqtt::callback,
 		std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 		try {
 			cli_.connect(connOpts_, nullptr, *this);
-			nretry_ = 0;
 		}
 		catch (const mqtt::exception& exc) {
 			#ifdef SPDLOG_H
@@ -88,23 +93,30 @@ class callback : public virtual mqtt::callback,
 	}
 	// Re-connection failure
 	void on_failure(const mqtt::token& tok) override {
+		#ifdef SPDLOG_H
+		auto logger = spdlog::get("MQTT");
+		#endif
 		connected = false;
-		if (nretry_ > N_RETRY_ATTEMPTS){
-			nretry_ = 0;
-			cli_.disconnect();
+		if (nretry_ > MQTT_CONSTS::N_RETRY_ATTEMPTS){
+			try {
+				cli_.disconnect();
+			} catch (const mqtt::exception& exc) {
+				#ifdef SPDLOG_H
+				logger->trace("Unable to disconnect from MQTT server, reason: {}", exc.what());
+				#endif
+			}
 			#ifdef SPDLOG_H
-			auto logger = spdlog::get("MQTT");
-			logger->error("Connection attempt failed after {} attemps: {} Reason: {}", N_RETRY_ATTEMPTS, tok.get_reason_code(), tok.get_return_code());
+			logger->error("Connection attempt failed after {} attemps, error: {} Reason: {}", MQTT_CONSTS::N_RETRY_ATTEMPTS, tok.get_reason_code(), tok.get_return_code());
 			#else
-			std::cout << "[MQTT] Connection attempt failed after " << N_RETRY_ATTEMPTS << " attempts: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
+			std::cout << "[MQTT] Connection attempt failed after " << MQTT_CONSTS::N_RETRY_ATTEMPTS << " attempts, error: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
 			#endif
+			nretry_ = 0;
 			return;
 		}
 		#ifdef SPDLOG_H
-		auto logger = spdlog::get("MQTT");
-		logger->debug("Connection attempt failed: {0}\n\t\\ Reason: {1}, reconnecting...", tok.get_reason_code(), tok.get_return_code());
+		logger->debug("Connection attempt failed: {}, attempt {}, Reason: {}, reconnecting...", tok.get_reason_code(), nretry_, tok.get_return_code());
 		#else
-		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << "reconnecting..." << std::endl;
+		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << ", attempt " << nretry_ << " Reason: " << tok.get_return_code() << "reconnecting..." << std::endl;
 		#endif
 		nretry_++;
 		reconnect();
@@ -137,7 +149,7 @@ class callback : public virtual mqtt::callback,
 		#else
 		std::cout << "[MQTT] Connection lost, cause: " << (cause.empty() ? "empty" : cause) << std::endl;
 		#endif
-		nretry_ = 0;
+		nretry_ = 1;
 		reconnect();
 	}
 

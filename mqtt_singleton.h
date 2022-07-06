@@ -22,6 +22,7 @@ class MQTT{
         callback cb;
         static MQTT *client;
         static std::mutex mutex;
+        bool connecting = false;
     public:
         static MQTT* getInstance(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "");
         bool isConnected();

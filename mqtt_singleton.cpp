@@ -59,7 +59,9 @@ bool MQTT::connect(){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
-    if(cb.connected)
+    if(cb.nretry_ == 0)
+        connecting = false;
+    if(cb.connected || connecting)
         return cb.connected;
     try {
         #ifdef SPDLOG_H
@@ -67,11 +69,14 @@ bool MQTT::connect(){
         #else
         std::cout << "[MQTT] Connecting to the MQTT server..." << std::endl;
         #endif
+        connecting = true;
+        cb.nretry_ = 1; // attempt 1
 		cli.connect(connOpts, nullptr, cb)->wait();
+        connecting = false;
     }
 	catch (const mqtt::exception& exc) {
         #ifdef SPDLOG_H
-		logger->info("Unable to connect to MQTT server, reason: {}", exc.what());
+		logger->warn("Unable to connect to MQTT server, reason: {}", exc.what());
         #else
         std::cout << "[MQTT] Unable to connect to MQTT server, reason: " << exc.what() << std::endl;
         #endif
