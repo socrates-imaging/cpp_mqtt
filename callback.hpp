@@ -89,14 +89,24 @@ class callback : public virtual mqtt::callback,
 	// Re-connection failure
 	void on_failure(const mqtt::token& tok) override {
 		connected = false;
+		if (nretry_ > N_RETRY_ATTEMPTS){
+			nretry_ = 0;
+			cli_.disconnect();
+			#ifdef SPDLOG_H
+			auto logger = spdlog::get("MQTT");
+			logger->error("Connection attempt failed after {} attemps: {} Reason: {}", N_RETRY_ATTEMPTS, tok.get_reason_code(), tok.get_return_code());
+			#else
+			std::cout << "[MQTT] Connection attempt failed after " << N_RETRY_ATTEMPTS << " attempts: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
+			#endif
+			return;
+		}
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->error("Connection attempt failed: {0}\n\t\\ Reason: {1}", tok.get_reason_code(), tok.get_return_code());
+		logger->debug("Connection attempt failed: {0}\n\t\\ Reason: {1}, reconnecting...", tok.get_reason_code(), tok.get_return_code());
 		#else
-		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << "\n\n\\ Reason: " << tok.get_return_code() << std::endl;
+		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << "reconnecting..." << std::endl;
 		#endif
-		if (++nretry_ > N_RETRY_ATTEMPTS)
-			abort();
+		nretry_++;
 		reconnect();
     }
 
@@ -105,6 +115,7 @@ class callback : public virtual mqtt::callback,
 	// Either this or connected() can be used for callbacks.
 	void on_success(const mqtt::token& tok) override {
 		connected = true;
+		nretry_ = 0;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->info("(Re)Connection attempt success to server: {}", tok.get_connect_response().get_server_uri());
