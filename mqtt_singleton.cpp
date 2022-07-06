@@ -9,7 +9,7 @@
 MQTT* MQTT::client{nullptr};
 std::mutex MQTT::mutex; 
 
-MQTT *MQTT::getInstance(std::string network, std::string user, std::string pass){
+MQTT *MQTT::getInstance(std::string UUID, std::string network, std::string user, std::string pass){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
@@ -23,15 +23,15 @@ MQTT *MQTT::getInstance(std::string network, std::string user, std::string pass)
             #endif
         }
         if(user == "" && pass == "")
-            MQTT::client = new MQTT(network);
+            MQTT::client = new MQTT(UUID, network);
         else
-            MQTT::client = new MQTT(network, user, pass);
+            MQTT::client = new MQTT(UUID, network, user, pass);
     }
     return MQTT::client;
 }
 
-MQTT::MQTT(std::string network)
-    : cli(network, "MQTT_RABBIT_SERVER"),
+MQTT::MQTT(std::string UUID, std::string network)
+    : cli(network, UUID),
       connOpts(mqtt::connect_options_builder().clean_session().mqtt_version(0).finalize()),
       cb(cli, connOpts) {
 
@@ -40,8 +40,8 @@ MQTT::MQTT(std::string network)
 	this->connect();
 }
 
-MQTT::MQTT(std::string network, std::string user, std::string pass) 
-    : cli(network, "MQTT_RABBIT_SERVER"),
+MQTT::MQTT(std::string UUID, std::string network, std::string user, std::string pass) 
+    : cli(network, UUID),
       connOpts(mqtt::connect_options_builder()
         .user_name(user).password(pass).clean_session().mqtt_version(0).finalize()),
       cb(cli, connOpts) {

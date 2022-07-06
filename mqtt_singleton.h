@@ -12,8 +12,8 @@
 
 class MQTT{
     protected:
-        MQTT(std::string network, std::string user, std::string pass);
-        MQTT(std::string network);
+        MQTT(std::string UUID, std::string network, std::string user, std::string pass);
+        MQTT(std::string UUID, std::string network);
         ~MQTT() {}
 
     private:
@@ -23,7 +23,7 @@ class MQTT{
         static MQTT *client;
         static std::mutex mutex;
     public:
-        static MQTT* getInstance(std::string network = "", std::string user = "", std::string pass = "");
+        static MQTT* getInstance(std::string UUID, std::string network = "", std::string user = "", std::string pass = "");
         bool isConnected();
 
         void publish(std::string topic, int qos, std::string msg, bool retain = false);
