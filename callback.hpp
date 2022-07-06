@@ -74,6 +74,7 @@ class callback : public virtual mqtt::callback,
 		std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 		try {
 			cli_.connect(connOpts_, nullptr, *this);
+			nretry_ = 0;
 		}
 		catch (const mqtt::exception& exc) {
 			#ifdef SPDLOG_H

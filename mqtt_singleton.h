@@ -23,7 +23,7 @@ class MQTT{
         static MQTT *client;
         static std::mutex mutex;
     public:
-        static MQTT* getInstance(std::string UUID, std::string network = "", std::string user = "", std::string pass = "");
+        static MQTT* getInstance(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "");
         bool isConnected();
 
         void publish(std::string topic, int qos, std::string msg, bool retain = false);
