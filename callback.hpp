@@ -136,9 +136,9 @@ class callback : public virtual mqtt::callback,
 		dispatch[topic]("mod-temp", msg->to_string());
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->info("Message arrived\n\t|\ttopic: '{0}'\n\t\\\tpayload: '{1}'", msg->get_topic(), msg->to_string());
+		logger->info("Message arrived\n|\ttopic: '{0}'\n\\\tpayload: '{1}'", msg->get_topic(), msg->to_string());
 		#else
-		std::cout << "[MQTT] Message arrived\n\t|\ttopic: '" << msg->get_topic() << "'\n\t\\\tpayload: '" << msg->to_string() << "'" << std::endl;
+		std::cout << "[MQTT] Message arrived\n|\ttopic: '" << msg->get_topic() << "'\n\\\tpayload: '" << msg->to_string() << "'" << std::endl;
 		#endif 
 	}
 
