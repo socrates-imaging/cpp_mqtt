@@ -59,8 +59,8 @@ bool MQTT::connect(){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
-    if(connected)
-        return connected;
+    if(cb.connected)
+        return cb.connected;
     try {
         #ifdef SPDLOG_H
 		logger->info("[MQTT] Connecting to the MQTT server...");
@@ -68,7 +68,6 @@ bool MQTT::connect(){
         std::cout << "[MQTT] Connecting to the MQTT server..." << std::endl;
         #endif
 		cli.connect(connOpts, nullptr, cb)->wait();
-        connected = true;
     }
 	catch (const mqtt::exception& exc) {
         #ifdef SPDLOG_H
@@ -77,15 +76,15 @@ bool MQTT::connect(){
         std::cout << "[MQTT] Unable to connect to MQTT server, reason: " << exc.what() << std::endl;
         #endif
 	}
-    return connected;
+    return cb.connected;
 }
 
 bool MQTT::disconnect(int timeout_ms){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
-    if(!connected)
-        return !connected;
+    if(!cb.connected)
+        return !cb.connected;
     try {
         #ifdef SPDLOG_H
 		logger->info("[MQTT] Disconnecting from the MQTT server...");
@@ -93,7 +92,7 @@ bool MQTT::disconnect(int timeout_ms){
         std::cout << "[MQTT] Disconnecting from the MQTT server..." << std::endl;
         #endif
         cli.disconnect();
-        connected = false;
+        cb.connected = false;
     } catch (const mqtt::exception& exc) {
         #ifdef SPDLOG_H
 		logger->info("[MQTT] Unable to disconnect from MQTT server, reason: {}", exc.what());
@@ -101,9 +100,11 @@ bool MQTT::disconnect(int timeout_ms){
         std::cout << "[MQTT] Unable to disconnect from MQTT server, reason: " << exc.what() << std::endl;
         #endif
     }
-    return !connected;
+    return !cb.connected;
 }
-  
+
+bool MQTT::isConnected(){return cb.connected;}
+
 void MQTT::subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func){
     cb.add_callback(topic, qos, func);
 }

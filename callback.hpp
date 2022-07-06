@@ -87,6 +87,7 @@ class callback : public virtual mqtt::callback,
 	}
 	// Re-connection failure
 	void on_failure(const mqtt::token& tok) override {
+		connected = false;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->error("[MQTT] Connection attempt failed: {0}\n\t\\ Reason: {1}", tok.get_reason_code(), tok.get_return_code());
@@ -102,6 +103,7 @@ class callback : public virtual mqtt::callback,
 	// (Re)connection success
 	// Either this or connected() can be used for callbacks.
 	void on_success(const mqtt::token& tok) override {
+		connected = true;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->info("[MQTT] (Re)Connection attempt success to server: {}", tok.get_connect_response().get_server_uri());
@@ -115,6 +117,7 @@ class callback : public virtual mqtt::callback,
     // Callback for when the connection is lost.
 	// This will initiate the attempt to manually reconnect.
 	void connection_lost(const std::string& cause) override {
+		connected = false;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->warn("[MQTT] Connection lost, cause: {}", cause.empty() ? "empty" : cause);
@@ -152,6 +155,7 @@ class callback : public virtual mqtt::callback,
     public:
 	    callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
 				: nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
+	bool connected;
 
 	void remove_callback(std::string topic){
 		cli_.unsubscribe(topic);

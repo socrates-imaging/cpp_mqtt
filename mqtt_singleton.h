@@ -22,9 +22,9 @@ class MQTT{
         callback cb;
         static MQTT *client;
         static std::mutex mutex;
-        bool connected = false;
     public:
         static MQTT* getInstance(std::string network = "", std::string user = "", std::string pass = "");
+        bool isConnected();
 
         void publish(std::string topic, int qos, std::string msg, bool retain = false);
         void publish(std::string topic, int qos, std::string msg, std::function<void(std::string, std::string)> func);

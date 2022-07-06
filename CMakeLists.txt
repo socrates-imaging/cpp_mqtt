@@ -4,6 +4,8 @@ project (soc_mqtt VERSION 1.0 DESCRIPTION "Socrates MQTT lib")
 
 include(GNUInstallDirs)
 
+find_package(PahoMqttCpp REQUIRED)
+link_libraries(paho-mqttpp3 paho-mqtt3as)
 # target_include_directories(soc_mqtt PUBLIC .)
 add_library(soc_mqtt SHARED
     mqtt_singleton.cpp
