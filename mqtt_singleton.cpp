@@ -17,7 +17,7 @@ MQTT *MQTT::getInstance(std::string network, std::string user, std::string pass)
     if(MQTT::client == nullptr){
         if(network == ""){
             #ifdef SPDLOG_H
-            logger->error("[MQTT] trying to initialize without network url!");
+            logger->error("trying to initialize without network url!");
             #else
             std::cout << "[MQTT] trying to initialize without network url!" << std::endl;
             #endif
@@ -63,7 +63,7 @@ bool MQTT::connect(){
         return cb.connected;
     try {
         #ifdef SPDLOG_H
-		logger->info("[MQTT] Connecting to the MQTT server...");
+		logger->info("Connecting to the MQTT server...");
         #else
         std::cout << "[MQTT] Connecting to the MQTT server..." << std::endl;
         #endif
@@ -71,7 +71,7 @@ bool MQTT::connect(){
     }
 	catch (const mqtt::exception& exc) {
         #ifdef SPDLOG_H
-		logger->info("[MQTT] Unable to connect to MQTT server, reason: {}", exc.what());
+		logger->info("Unable to connect to MQTT server, reason: {}", exc.what());
         #else
         std::cout << "[MQTT] Unable to connect to MQTT server, reason: " << exc.what() << std::endl;
         #endif
@@ -87,7 +87,7 @@ bool MQTT::disconnect(int timeout_ms){
         return !cb.connected;
     try {
         #ifdef SPDLOG_H
-		logger->info("[MQTT] Disconnecting from the MQTT server...");
+		logger->info("Disconnecting from the MQTT server...");
         #else
         std::cout << "[MQTT] Disconnecting from the MQTT server..." << std::endl;
         #endif
@@ -95,7 +95,7 @@ bool MQTT::disconnect(int timeout_ms){
         cb.connected = false;
     } catch (const mqtt::exception& exc) {
         #ifdef SPDLOG_H
-		logger->info("[MQTT] Unable to disconnect from MQTT server, reason: {}", exc.what());
+		logger->info("Unable to disconnect from MQTT server, reason: {}", exc.what());
         #else
         std::cout << "[MQTT] Unable to disconnect from MQTT server, reason: " << exc.what() << std::endl;
         #endif

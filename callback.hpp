@@ -77,7 +77,7 @@ class callback : public virtual mqtt::callback,
 		}
 		catch (const mqtt::exception& exc) {
 			#ifdef SPDLOG_H
-			logger->error("[MQTT] exception: {}", exc.what());
+			logger->error("exception: {}", exc.what());
 			#else
 			std::cout << "[MQTT] exception " << exc.what() << std::endl;
 			#endif
@@ -90,7 +90,7 @@ class callback : public virtual mqtt::callback,
 		connected = false;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->error("[MQTT] Connection attempt failed: {0}\n\t\\ Reason: {1}", tok.get_reason_code(), tok.get_return_code());
+		logger->error("Connection attempt failed: {0}\n\t\\ Reason: {1}", tok.get_reason_code(), tok.get_return_code());
 		#else
 		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << "\n\n\\ Reason: " << tok.get_return_code() << std::endl;
 		#endif
@@ -106,7 +106,7 @@ class callback : public virtual mqtt::callback,
 		connected = true;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->info("[MQTT] (Re)Connection attempt success to server: {}", tok.get_connect_response().get_server_uri());
+		logger->info("(Re)Connection attempt success to server: {}", tok.get_connect_response().get_server_uri());
 		#else
 		std::cout << "[MQTT] (Re)Connection attempt success to server: " << tok.get_connect_response().get_server_uri() << std::endl;
 		#endif
@@ -120,8 +120,8 @@ class callback : public virtual mqtt::callback,
 		connected = false;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->warn("[MQTT] Connection lost, cause: {}", cause.empty() ? "empty" : cause);
-		logger->info("[MQTT] Reconnecting...");
+		logger->warn("Connection lost, cause: {}", cause.empty() ? "empty" : cause);
+		logger->info("Reconnecting...");
 		#else
 		std::cout << "[MQTT] Connection lost, cause: " << (cause.empty() ? "empty" : cause) << std::endl;
 		#endif
@@ -136,7 +136,7 @@ class callback : public virtual mqtt::callback,
 		dispatch[topic]("mod-temp", msg->to_string());
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->info("[MQTT] Message arrived\n\t|\ttopic: '{0}'\n\t\\\tpayload: '{1}'", msg->get_topic(), msg->to_string());
+		logger->info("Message arrived\n\t|\ttopic: '{0}'\n\t\\\tpayload: '{1}'", msg->get_topic(), msg->to_string());
 		#else
 		std::cout << "[MQTT] Message arrived\n\t|\ttopic: '" << msg->get_topic() << "'\n\t\\\tpayload: '" << msg->to_string() << "'" << std::endl;
 		#endif 
@@ -145,7 +145,7 @@ class callback : public virtual mqtt::callback,
 	void delivery_complete(mqtt::delivery_token_ptr token) override {
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
-		logger->info("[MQTT] delivery: {}", token.get()->get_message().get()->get_topic());
+		logger->info("delivery: {}", token.get()->get_message().get()->get_topic());
 		#else
 		std::cout << "[MQTT] delivery: " << token.get()->get_message().get()->get_topic() << std::endl;
 		#endif
