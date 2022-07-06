@@ -35,14 +35,6 @@ MQTT::MQTT(std::string network)
       connOpts(mqtt::connect_options_builder().clean_session().mqtt_version(0).finalize()),
       cb(cli, connOpts) {
 
-    // connOpts SetAutomaticReconnect
-    
-    std::cout << "Creating MQTT with only network " << std::endl;
-
-    #ifdef SPDLOG_H
-    auto logger = spdlog::get("MQTT");
-    #endif
-
     cli.set_callback(cb);
 
 	this->connect();
