@@ -17,7 +17,7 @@ int main() {
 
 	// subscribe to topic, together with setting message handler, print on success
     const std::string mqtt_topic = "Some/Topic";
-    mqtt->subscribe(mqtt_topic, 2, &on_message); // topic, qos, message event handler	
+    mqtt->subscribe(mqtt_topic, MQTT::QOS::EXACTLY_ONCE, &on_message); // topic, qos, message event handler	
 
 	while (true) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -32,7 +32,7 @@ void on_message(std::string mod, std::string payload){
 
 	MQTT* mqtt = MQTT::getInstance();
 	try{
-		mqtt->publish("Some/TopicReply", 2, "Hello!");
+		mqtt->publish("Some/TopicReply", MQTT::QOS::AT_MOST_ONCE, "Hello!");
 	}
 	catch(const std::exception& e){
 		std::cout << "MQTT Exception: " << e.what() << std::endl;

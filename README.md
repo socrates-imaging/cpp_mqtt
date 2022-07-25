@@ -5,6 +5,11 @@ Based on Paho mqtt library, see [paho.mqtt.cpp](https://github.com/eclipse/paho.
 $ sudo apt-get install libmosquitto-dev
 ```
 
+Install with:
+```
+make && sudo make install
+```
+
 compile example with
 ```
 $ g++ Example.cpp mqtt_singleton.cpp -o Example -lpaho-mqtt3as -lpaho-mqttpp3 -lspdlog -lfmt

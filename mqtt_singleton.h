@@ -25,6 +25,14 @@ class MQTT{
         bool connecting = false;
     public:
         static MQTT* getInstance(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "");
+        
+        enum QOS{
+            AT_MOST_ONCE = 0,
+            AT_LEAST_ONE = 1,
+            EXACTLY_ONCE = 2
+        };
+
+
         bool isConnected();
 
         void publish(std::string topic, int qos, std::string msg, bool retain = false);
