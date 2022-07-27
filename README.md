@@ -7,6 +7,8 @@ $ sudo apt-get install libmosquitto-dev
 
 Install with:
 ```
+mkdir build && cd build
+cmake ..
 make && sudo make install
 ```
 
