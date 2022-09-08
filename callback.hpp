@@ -54,8 +54,7 @@ class action_listener : public virtual mqtt::iaction_listener{
 class MQTT;
 
 namespace MQTT_CONSTS {
-	// max amount of retries
-	constexpr const int	N_RETRY_ATTEMPTS = 5;
+	constexpr const int	N_RETRY_ATTEMPTS = 20;
 }
 
 class callback : public virtual mqtt::callback,
@@ -63,6 +62,8 @@ class callback : public virtual mqtt::callback,
 friend MQTT;
     // Counter for the number of connection retries
 	int nretry_;
+	// Time before next attempt is done - logic should up this each attempt.
+	int retry_delay_ms = 0;
 	// Reference to the client for reconnect
 	mqtt::async_client& cli_;
 	// Options to use if we need to reconnect
@@ -87,7 +88,7 @@ friend MQTT;
 			#else
 			std::cout << "[MQTT] exception " << exc.what() << std::endl;
 			#endif
-			// abort();//TODO remove exits for propper fault exceptions
+			// abort();//TODO remove exits for proper fault exceptions
 			reconnect();
 		}
 	}
@@ -111,6 +112,7 @@ friend MQTT;
 			std::cout << "[MQTT] Connection attempt failed after " << MQTT_CONSTS::N_RETRY_ATTEMPTS << " attempts, error: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
 			#endif
 			nretry_ = 0;
+			retry_delay_ms = 0;
 			return;
 		}
 		#ifdef SPDLOG_H
@@ -119,6 +121,8 @@ friend MQTT;
 		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << ", attempt " << nretry_ << " Reason: " << tok.get_return_code() << "reconnecting..." << std::endl;
 		#endif
 		nretry_++;
+		std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay_ms));
+		retry_delay_ms += 10000; //Wait a bit longer each time
 		reconnect();
     }
 
@@ -128,6 +132,7 @@ friend MQTT;
 	void on_success(const mqtt::token& tok) override {
 		connected = true;
 		nretry_ = 0;
+		retry_delay_ms = 0;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->info("(Re)Connection attempt success to server: {}", tok.get_connect_response().get_server_uri());
