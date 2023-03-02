@@ -54,8 +54,8 @@ class action_listener : public virtual mqtt::iaction_listener{
 class MQTT;
 
 namespace MQTT_CONSTS {
-	// max amount of retries
-	constexpr const int	N_RETRY_ATTEMPTS = 5;
+	// Max amount of retries. Use negative for infinite retries
+	constexpr const int	N_RETRY_ATTEMPTS = -1;
 }
 
 class callback : public virtual mqtt::callback,
@@ -97,26 +97,28 @@ friend MQTT;
 		auto logger = spdlog::get("MQTT");
 		#endif
 		connected = false;
-		if (nretry_ > MQTT_CONSTS::N_RETRY_ATTEMPTS){
-			try {
-				cli_.disconnect();
-			} catch (const mqtt::exception& exc) {
+		if constexpr(MQTT_CONSTS::N_RETRY_ATTEMPTS >= 0) {  
+			if (nretry_ > MQTT_CONSTS::N_RETRY_ATTEMPTS){
+				try {
+					cli_.disconnect();
+				} catch (const mqtt::exception& exc) {
+					#ifdef SPDLOG_H
+					logger->trace("Unable to disconnect from MQTT server, reason: {}", exc.what());
+					#endif
+				}
 				#ifdef SPDLOG_H
-				logger->trace("Unable to disconnect from MQTT server, reason: {}", exc.what());
+				logger->error("Connection attempt failed after {} attemps, error: {} Reason: {}", MQTT_CONSTS::N_RETRY_ATTEMPTS, tok.get_reason_code(), tok.get_return_code());
+				#else
+				std::cout << "[MQTT] Connection attempt failed after " << MQTT_CONSTS::N_RETRY_ATTEMPTS << " attempts, error: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
 				#endif
+				nretry_ = 0;
+				return;
 			}
-			#ifdef SPDLOG_H
-			logger->error("Connection attempt failed after {} attemps, error: {} Reason: {}", MQTT_CONSTS::N_RETRY_ATTEMPTS, tok.get_reason_code(), tok.get_return_code());
-			#else
-			std::cout << "[MQTT] Connection attempt failed after " << MQTT_CONSTS::N_RETRY_ATTEMPTS << " attempts, error: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
-			#endif
-			nretry_ = 0;
-			return;
 		}
 		#ifdef SPDLOG_H
 		logger->debug("Connection attempt failed: {}, attempt {}, Reason: {}, reconnecting...", tok.get_reason_code(), nretry_, tok.get_return_code());
 		#else
-		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << ", attempt " << nretry_ << " Reason: " << tok.get_return_code() << "reconnecting..." << std::endl;
+		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << ", attempt " << nretry_ << " Reason: " << tok.get_return_code() << ", reconnecting..." << std::endl;
 		#endif
 		nretry_++;
 		reconnect();
