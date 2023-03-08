@@ -74,7 +74,6 @@ friend MQTT;
 	//Map to the callable functions
     std::map<std::string, std::function<void(std::string, std::string)>> dispatch;
 
-
 	void reconnect() {
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
@@ -182,10 +181,10 @@ friend MQTT;
 		#endif
 	}
 
-
     public:
 	    callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
 				: nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
+
 	bool connected;
 
 	void remove_callback(std::string topic){

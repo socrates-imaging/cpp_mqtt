@@ -1,58 +1,73 @@
 #include "mqtt_singleton.h"
 
+#include <memory>
 #ifdef MQTT_SPDLOG
 #include <spdlog/spdlog.h>
 #else
 #include <iostream>
 #endif
 
-MQTT* MQTT::client{nullptr};
+// Static member initialization
 std::mutex MQTT::mutex; 
+std::unique_ptr<MQTT> MQTT::client = nullptr; 
 
-MQTT *MQTT::getInstance(std::string UUID, std::string network, std::string user, std::string pass){
+void MQTT::initalize(std::string UUID, std::string network, std::string user, std::string pass, bool clean_sessions){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
+
     std::lock_guard<std::mutex> lock(MQTT::mutex);
-    if(MQTT::client == nullptr){
-        if(network == ""){
-            #ifdef SPDLOG_H
-            logger->error("trying to initialize without network url!");
-            #else
-            std::cout << "[MQTT] trying to initialize without network url!" << std::endl;
-            #endif
-        }
-        if(user == "" && pass == "")
-            MQTT::client = new MQTT(UUID, network);
-        else
-            MQTT::client = new MQTT(UUID, network, user, pass);
+    
+    if(client != nullptr){
+        #ifdef SPDLOG_H
+        logger->warn("MQTT singleton already initalized!");
+        #else
+        std::cout << "[MQTT] MQTT Singleton already initalized!" << std::endl;
+        #endif
+        return;
     }
-    return MQTT::client;
+
+    if(network == ""){
+        #ifdef SPDLOG_H
+        logger->error("trying to initialize without network url!");
+        #else
+        std::cout << "[MQTT] trying to initialize without network url!" << std::endl;
+        #endif
+    }
+
+    auto options = mqtt::connect_options_builder().mqtt_version(0);
+
+    if(user != "" || pass != ""){
+        options.user_name(user).password(pass);
+    }
+    if (clean_sessions){
+        options.clean_session(true);
+    } else {
+        options.clean_session(false);
+    }
+
+    client = std::make_unique<MQTT>(UUID, network, options.finalize());
 }
 
-MQTT::MQTT(std::string UUID, std::string network)
-    : cli(network, UUID),
-      connOpts(mqtt::connect_options_builder().clean_session().mqtt_version(0).finalize()),
-      cb(cli, connOpts) {
-
-    cli.set_callback(cb);
-
-	this->connect();
+MQTT* MQTT::getInstance(){
+    std::lock_guard<std::mutex> lock(MQTT::mutex);
+    if(client == nullptr){
+        #ifdef SPDLOG_H
+        auto logger = spdlog::get("MQTT");
+        logger->error("trying to get instance without initalizing!");
+        #else
+        std::cout << "[MQTT] trying to get instance without initalizing!" << std::endl;
+        #endif
+    }
+    return client.get();
 }
 
-MQTT::MQTT(std::string UUID, std::string network, std::string user, std::string pass) 
-    : cli(network, UUID),
-      connOpts(mqtt::connect_options_builder()
-        .user_name(user).password(pass).clean_session().mqtt_version(0).finalize()),
-      cb(cli, connOpts) {
 
-    #ifdef SPDLOG_H
-    auto logger = spdlog::get("MQTT");
-    #endif
-
+MQTT::MQTT(std::string UUID, std::string network, mqtt::connect_options _connOpts)
+:  cli(network, UUID), connOpts(_connOpts),  cb(cli, connOpts) 
+{
     cli.set_callback(cb);
-
-	this->connect();
+    this->connect();
 }
 
 bool MQTT::connect(){

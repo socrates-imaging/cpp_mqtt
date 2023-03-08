@@ -11,20 +11,12 @@
 #define WARNING_LEVEL 2
 
 class MQTT{
-    protected:
-        MQTT(std::string UUID, std::string network, std::string user, std::string pass);
-        MQTT(std::string UUID, std::string network);
+    public:
+        MQTT(std::string UUID, std::string network, mqtt::connect_options connOpts);
         ~MQTT() {}
 
-    private:
-        mqtt::async_client cli;
-        mqtt::connect_options connOpts;
-        callback cb;
-        static MQTT *client;
-        static std::mutex mutex;
-        bool connecting = false;
-    public:
-        static MQTT* getInstance(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "");
+        static void initalize(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "", bool clean_sessions = true);
+        static MQTT* getInstance();
         
         enum QOS{
             AT_MOST_ONCE = 0,
@@ -45,4 +37,12 @@ class MQTT{
 
         MQTT(MQTT const&) = delete;
         void operator=(MQTT const&) = delete;
+
+    private:
+        mqtt::async_client cli;
+        mqtt::connect_options connOpts;
+        callback cb;
+        static std::unique_ptr<MQTT> client;
+        static std::mutex mutex;
+        bool connecting = false;
 };
