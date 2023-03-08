@@ -98,7 +98,7 @@ friend MQTT;
 		auto logger = spdlog::get("MQTT");
 		#endif
 		connected = false;
-		if constexpr(MQTT_CONSTS::N_RETRY_ATTEMPTS >= 0) {  
+		if (MQTT_CONSTS::N_RETRY_ATTEMPTS >= 0) {  
 			if (nretry_ > MQTT_CONSTS::N_RETRY_ATTEMPTS){
 				try {
 					cli_.disconnect();

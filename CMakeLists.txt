@@ -28,5 +28,3 @@ PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 install(FILES ${CMAKE_BINARY_DIR}/soc_mqtt.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
 )
-
-target_compile_features(soc_mqtt PRIVATE cxx_std_17)
