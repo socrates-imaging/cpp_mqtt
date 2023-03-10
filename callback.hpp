@@ -53,19 +53,9 @@ class action_listener : public virtual mqtt::iaction_listener{
 
 class MQTT;
 
-namespace MQTT_CONSTS {
-	// Max amount of retries. Use negative for infinite retries
-	constexpr const int	N_RETRY_ATTEMPTS = -1;
-}
-
 class callback : public virtual mqtt::callback,
 					public virtual mqtt::iaction_listener{
 friend MQTT;
-    // Counter for the number of connection retries
-	int nretry_;
-	// Time before next attempt is done - logic should up this each attempt.
-	int retry_delay_ms = 0;
-	// Reference to the client for reconnect
 	mqtt::async_client& cli_;
 	// Options to use if we need to reconnect
 	mqtt::connect_options& connOpts_;
@@ -74,91 +64,26 @@ friend MQTT;
 	//Map to the callable functions
     std::map<std::string, std::function<void(std::string, std::string)>> dispatch;
 
-	void reconnect() {
-		#ifdef SPDLOG_H
-		auto logger = spdlog::get("MQTT");
-		#endif
-		std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-		try {
-			cli_.connect(connOpts_, nullptr, *this);
-		}
-		catch (const mqtt::exception& exc) {
-			#ifdef SPDLOG_H
-			logger->error("exception: {}", exc.what());
-			#else
-			std::cout << "[MQTT] exception " << exc.what() << std::endl;
-			#endif
-			// abort();//TODO remove exits for proper fault exceptions
-			reconnect();
-		}
-	}
-	// Re-connection failure
+
 	void on_failure(const mqtt::token& tok) override {
-		#ifdef SPDLOG_H
-		auto logger = spdlog::get("MQTT");
-		#endif
 		connected = false;
-		if constexpr(MQTT_CONSTS::N_RETRY_ATTEMPTS >= 0) {  
-			if (nretry_ > MQTT_CONSTS::N_RETRY_ATTEMPTS){
-				try {
-					cli_.disconnect();
-				} catch (const mqtt::exception& exc) {
-					#ifdef SPDLOG_H
-					logger->trace("Unable to disconnect from MQTT server, reason: {}", exc.what());
-					#endif
-				}
-				#ifdef SPDLOG_H
-				logger->error("Connection attempt failed after {} attemps, error: {} Reason: {}", MQTT_CONSTS::N_RETRY_ATTEMPTS, tok.get_reason_code(), tok.get_return_code());
-				#else
-				std::cout << "[MQTT] Connection attempt failed after " << MQTT_CONSTS::N_RETRY_ATTEMPTS << " attempts, error: " << tok.get_reason_code() << " Reason: " << tok.get_return_code() << std::endl;
-				#endif
-				nretry_ = 0;
-				return;
-			}
-		}
-		#ifdef SPDLOG_H
-		logger->debug("Connection attempt failed: {}, attempt {}, Reason: {}, reconnecting...", tok.get_reason_code(), nretry_, tok.get_return_code());
-		#else
-		std::cout << "[MQTT] Connection attempt failed: " << tok.get_reason_code() << ", attempt " << nretry_ << " Reason: " << tok.get_return_code() << ", reconnecting..." << std::endl;
-		#endif
-		nretry_++;
-		std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay_ms));
-		retry_delay_ms += 10000; //Wait a bit longer each time
-		reconnect();
     }
 
-
-	// (Re)connection success
-	// Either this or connected() can be used for callbacks.
 	void on_success(const mqtt::token& tok) override {
-		connected = true;
-		nretry_ = 0;
-		retry_delay_ms = 0;
-		#ifdef SPDLOG_H
-		auto logger = spdlog::get("MQTT");
-		logger->info("(Re)Connection attempt success to server: {}", tok.get_connect_response().get_server_uri());
-		#else
 		std::cout << "[MQTT] (Re)Connection attempt success to server: " << tok.get_connect_response().get_server_uri() << std::endl;
-		#endif
+		connected = true;
 	}
-
-	// (Re)connection success
-
+ 
     // Callback for when the connection is lost.
-	// This will initiate the attempt to manually reconnect.
 	void connection_lost(const std::string& cause) override {
-		connected = false;
 		#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->warn("Connection lost, cause: {}", cause.empty() ? "empty" : cause);
-		logger->info("Reconnecting...");
 		#else
 		std::cout << "[MQTT] Connection lost, cause: " << (cause.empty() ? "empty" : cause) << std::endl;
 		#endif
-		nretry_ = 1;
-		reconnect();
+		connected = false;
 	}
-
 
 	// Callback for when a message arrives.
 	void message_arrived(mqtt::const_message_ptr msg) override {
@@ -183,9 +108,9 @@ friend MQTT;
 
     public:
 	    callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
-				: nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
+			: cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
 
-	bool connected;
+	bool connected = false;
 
 	void remove_callback(std::string topic){
 		cli_.unsubscribe(topic);
