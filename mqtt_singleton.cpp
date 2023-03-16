@@ -35,7 +35,7 @@ void MQTT::initalize(std::string UUID, std::string network, std::string user, st
         #endif
     }
 
-    auto options = mqtt::connect_options_builder().mqtt_version(0);
+    auto options = mqtt::connect_options_builder().mqtt_version(0).automatic_reconnect(std::chrono::seconds(3), std::chrono::seconds(10));
 
     if(user != "" || pass != ""){
         options.user_name(user).password(pass);
@@ -66,7 +66,7 @@ MQTT* MQTT::getInstance(){
 MQTT::MQTT(std::string UUID, std::string network, mqtt::connect_options _connOpts)
 :  cli(network, UUID), connOpts(_connOpts),  cb(cli, connOpts) 
 {
-    cli.set_callback(cb);
+    cli.set_callback(cb); 
     this->connect();
 }
 
@@ -74,29 +74,16 @@ bool MQTT::connect(){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
-    if(cb.nretry_ == 0)
-        connecting = false;
-    if(cb.connected || connecting)
-        return cb.connected;
     try {
-        #ifdef SPDLOG_H
-		logger->info("Connecting to the MQTT server...");
-        #else
-        std::cout << "[MQTT] Connecting to the MQTT server..." << std::endl;
-        #endif
-        connecting = true;
-        cb.nretry_ = 1; // attempt 1
-		cli.connect(connOpts, nullptr, cb)->wait();
-        connecting = false;
+        cli.connect(connOpts, nullptr, cb)->wait();
+        cb.connected = true;
     }
 	catch (const mqtt::exception& exc) {
-        #ifdef SPDLOG_H
-		logger->warn("Unable to connect to MQTT server, reason: {}", exc.what());
-        #else
-        std::cout << "[MQTT] Unable to connect to MQTT server, reason: " << exc.what() << std::endl;
-        #endif
+        std::cout << "Failed to connect" << std::endl;
+        cb.connected = false;
+        return false;
 	}
-    return cb.connected;
+    return true;
 }
 
 bool MQTT::disconnect(int timeout_ms){
@@ -123,7 +110,11 @@ bool MQTT::disconnect(int timeout_ms){
     return !cb.connected;
 }
 
-bool MQTT::isConnected(){return cb.connected;}
+bool MQTT::isConnected(){
+    std::cout << "MQTT is connected: " << cb.connected << std::endl;
+    //return cli.is_connected();
+    return cb.connected;
+}
 
 void MQTT::subscribe(std::string topic, int qos, std::function<void(std::string, std::string)> func){
     cb.add_callback(topic, qos, func);
