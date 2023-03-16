@@ -75,15 +75,15 @@ bool MQTT::connect(){
     auto logger = spdlog::get("MQTT");
     #endif
     try {
-        cli.connect(connOpts, nullptr, cb);
+        cli.connect(connOpts, nullptr, cb)->wait();
         cb.connected = true;
-        std::cout << "connected" << std::endl;
     }
 	catch (const mqtt::exception& exc) {
         std::cout << "Failed to connect" << std::endl;
         cb.connected = false;
+        return false;
 	}
-    return cb.connected;
+    return true;
 }
 
 bool MQTT::disconnect(int timeout_ms){
@@ -111,6 +111,8 @@ bool MQTT::disconnect(int timeout_ms){
 }
 
 bool MQTT::isConnected(){
+    std::cout << "MQTT is connected: " << cb.connected << std::endl;
+    //return cli.is_connected();
     return cb.connected;
 }
 
