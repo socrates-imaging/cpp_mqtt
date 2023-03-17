@@ -35,7 +35,7 @@ void MQTT::initalize(std::string UUID, std::string network, std::string user, st
         #endif
     }
 
-    auto options = mqtt::connect_options_builder().mqtt_version(0).automatic_reconnect(std::chrono::seconds(3), std::chrono::seconds(10));
+    auto options = mqtt::connect_options_builder().mqtt_version(0).automatic_reconnect(true);
 
     if(user != "" || pass != ""){
         options.user_name(user).password(pass);
