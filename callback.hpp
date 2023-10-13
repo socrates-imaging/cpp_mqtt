@@ -91,12 +91,6 @@ friend MQTT;
 		try {
 			std::string topic = msg->get_topic();
 			dispatch[topic]("mod-temp", msg->to_string());
-			#ifdef SPDLOG_H
-			auto logger = spdlog::get("MQTT");
-			logger->info("Message arrived\n|\ttopic: '{0}'\n\\\tpayload: '{1}'", msg->get_topic(), msg->to_string());
-			#else
-			std::cout << "[MQTT] Message arrived\n|\ttopic: '" << msg->get_topic() << "'\n\\\tpayload: '" << msg->to_string() << "'" << std::endl;
-			#endif 
     	} catch(const std::bad_function_call& e) {
 			std::string error_message = "MQTT: No callback function for topic: " + msg->get_topic() + " message: " + msg->to_string();
 		}
