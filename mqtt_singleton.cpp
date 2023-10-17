@@ -111,7 +111,6 @@ bool MQTT::disconnect(int timeout_ms){
 }
 
 bool MQTT::isConnected(){
-    std::cout << "MQTT is connected: " << cb.connected << std::endl;
     //return cli.is_connected();
     return cb.connected;
 }
