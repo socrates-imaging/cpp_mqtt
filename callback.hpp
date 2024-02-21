@@ -97,12 +97,14 @@ friend MQTT;
 	}
 
 	void delivery_complete(mqtt::delivery_token_ptr token) override {
-		#ifdef SPDLOG_H
+#ifdef NDEBUG
+	#ifdef SPDLOG_H
 		auto logger = spdlog::get("MQTT");
 		logger->info("delivery: {}", token.get()->get_message().get()->get_topic());
-		#else
+	#else
 		std::cout << "[MQTT] delivery: " << token.get()->get_message().get()->get_topic() << std::endl;
-		#endif
+	#endif
+#endif
 	}
 
     public:
