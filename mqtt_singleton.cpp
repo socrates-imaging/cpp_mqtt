@@ -1,6 +1,7 @@
 #include "mqtt_singleton.h"
 
 #include <memory>
+#include <chrono>
 #ifdef MQTT_SPDLOG
 #include <spdlog/spdlog.h>
 #else
@@ -33,9 +34,10 @@ void MQTT::initalize(std::string UUID, std::string network, std::string user, st
         #else
         std::cout << "[MQTT] trying to initialize without network url!" << std::endl;
         #endif
-    }
+    }   
 
-    auto options = mqtt::connect_options_builder().mqtt_version(0).automatic_reconnect(true);
+    auto keep_alive_duration = std::chrono::seconds(60);
+    auto options = mqtt::connect_options_builder().mqtt_version(0).automatic_reconnect(true).keep_alive_interval(keep_alive_duration);
 
     if(user != "" || pass != ""){
         options.user_name(user).password(pass);
@@ -68,6 +70,12 @@ MQTT::MQTT(std::string UUID, std::string network, mqtt::connect_options _connOpt
 {
     cli.set_callback(cb); 
     this->connect();
+}
+
+MQTT::~MQTT(){
+    if(cb.connected){
+        this->disconnect();
+    }
 }
 
 bool MQTT::connect(){
