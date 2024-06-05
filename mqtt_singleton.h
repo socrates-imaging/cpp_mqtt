@@ -13,7 +13,7 @@
 class MQTT{
     public:
         MQTT(std::string UUID, std::string network, mqtt::connect_options connOpts);
-        ~MQTT() {}
+        ~MQTT();
 
         static void initalize(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "", bool clean_sessions = true);
         static MQTT* getInstance();
