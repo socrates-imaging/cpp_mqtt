@@ -15,7 +15,7 @@ class MQTT{
         MQTT(std::string UUID, std::string network, mqtt::connect_options connOpts);
         ~MQTT();
 
-        static void initalize(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "", bool clean_sessions = true);
+        static void initalize(std::string UUID = "", std::string network = "", std::string user = "", std::string pass = "", bool clean_sessions = true, int keep_alive_interval_s = 60);
         static MQTT* getInstance();
         
         enum QOS{

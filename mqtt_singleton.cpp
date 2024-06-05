@@ -12,7 +12,7 @@
 std::mutex MQTT::mutex; 
 std::unique_ptr<MQTT> MQTT::client = nullptr; 
 
-void MQTT::initalize(std::string UUID, std::string network, std::string user, std::string pass, bool clean_sessions){
+void MQTT::initalize(std::string UUID, std::string network, std::string user, std::string pass, bool clean_sessions, int keep_alive_duration_s){
     #ifdef SPDLOG_H
     auto logger = spdlog::get("MQTT");
     #endif
@@ -36,7 +36,7 @@ void MQTT::initalize(std::string UUID, std::string network, std::string user, st
         #endif
     }   
 
-    auto keep_alive_duration = std::chrono::seconds(60);
+    auto keep_alive_duration = std::chrono::seconds(keep_alive_duration_s);
     auto options = mqtt::connect_options_builder().mqtt_version(0).automatic_reconnect(true).keep_alive_interval(keep_alive_duration);
 
     if(user != "" || pass != ""){
